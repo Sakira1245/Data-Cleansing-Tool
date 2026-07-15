@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XML Data Cleansing Tool</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <div class="header">
+            <div class="header-content">
+                <i class="fas fa-file-alt header-icon"></i>
+                <h1>XML Data Cleansing Tool</h1>
+            </div>
+            <p class="header-description">
+                Upload XML files to clean AccountID, Content, and SummaryDescription tags, then download both cleaned XML and compressed versions
+            </p>
+        </div>
+
+        <div class="main-card">
+            <div class="card-header">
+                <div class="card-title">
+                    <span id="step-title">Upload XML Files</span>
+                    <button id="start-over-btn" class="btn btn-outline start-over-btn" style="display: none;">
+                        <i class="fas fa-refresh"></i>
+                        Start Over
+                    </button>
+                </div>
+                <p id="step-description" class="card-description">
+                    Select multiple XML files to process
+                </p>
+            </div>
+
+            <div class="card-content">
+                <!-- Upload Section -->
+                <div id="upload-section" class="section active">
+                    <div class="upload-area" id="upload-area">
+                        <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                        <h3>Drop XML files here or click to browse</h3>
+                        <p class="upload-description">Select multiple XML files to process</p>
+                        <input type="file" id="file-input" multiple accept=".xml" style="display: none;">
+                        <button class="btn btn-outline" id="browse-btn">Browse Files</button>
+                    </div>
+
+                    <div id="selected-files" class="selected-files" style="display: none;">
+                        <h4 id="file-count">Selected Files (0)</h4>
+                        <div id="file-list" class="file-list"></div>
+                        <div class="process-section">
+                            <button id="start-processing-btn" class="btn btn-primary full-width" disabled>
+                                Start Processing (0 files)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Processing Section -->
+                <div id="processing-section" class="section">
+                    <div class="processing-header">
+                        <h3 id="processing-title">Processing files...</h3>
+                        <div class="progress-container">
+                            <div class="progress-bar">
+                                <div id="progress-fill" class="progress-fill"></div>
+                            </div>
+                        </div>
+                        <p id="processing-stats" class="processing-stats">
+                            0 completed, 0 errors, 0 remaining
+                        </p>
+                    </div>
+
+                    <div class="processing-files">
+                        <div id="processing-list" class="processing-list"></div>
+                    </div>
+
+                    <div id="processing-complete" class="processing-complete" style="display: none;">
+                        <i class="fas fa-check-circle complete-icon"></i>
+                        <p id="complete-message" class="complete-message"></p>
+                    </div>
+                </div>
+
+                <!-- Download Section -->
+                <div id="download-section" class="section">
+                    <div class="download-header">
+                        <h3>Download Processed Files</h3>
+                        <p id="download-stats" class="download-stats"></p>
+                    </div>
+
+                    <div class="download-grid">
+                        <div class="download-card green">
+                            <i class="fas fa-folder-open download-icon"></i>
+                            <h4>Cleaned XML Files</h4>
+                            <p class="download-description">
+                                Original XML files with cleaned AccountID and Content tags
+                            </p>
+                            <button id="download-xml-btn" class="btn btn-success full-width">
+                                <i class="fas fa-download"></i>
+                                Download XML Files
+                            </button>
+                        </div>
+
+                        <div class="download-card blue">
+                            <i class="fas fa-file-archive download-icon"></i>
+                            <h4>Compressed Files</h4>
+                            <p class="download-description">
+                                XML files compressed to .xml.gz format
+                            </p>
+                            <button id="download-gz-btn" class="btn btn-info full-width">
+                                <i class="fas fa-download"></i>
+                                Download .xml.gz Files
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="download-all-card">
+                        <div class="download-all-icon">
+                            <i class="fas fa-folder-open"></i>
+                            <i class="fas fa-file-archive download-all-overlay"></i>
+                        </div>
+                        <h4>Download All Files</h4>
+                        <p class="download-description">
+                            Get both cleaned XML files and compressed versions in separate folders
+                        </p>
+                        <button id="download-all-btn" class="btn btn-primary btn-lg">
+                            <i class="fas fa-download"></i>
+                            <span id="download-all-text">Download All Files</span>
+                        </button>
+                    </div>
+
+                    <div id="file-summary" class="file-summary">
+                        <h4>File Summary</h4>
+                        <div id="summary-list" class="summary-list"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-panel">
+            <h3>How it works:</h3>
+            <ul class="info-list">
+                <li>• Upload multiple XML files containing AccountID, Content, and SummaryDescription tags</li>
+                <li>• System removes "BIN" or "VAT" prefixes and formats numbers as XXXXXXX-XXXX</li>
+                <li>• Cleans SummaryDescription tags by removing invalid characters</li>
+                <li>• Generates both cleaned XML files and compressed .xml.gz versions</li>
+                <li>• Download both sets of files in separate folders</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Loading overlay -->
+    <div id="loading-overlay" class="loading-overlay" style="display: none;">
+        <div class="loading-content">
+            <i class="fas fa-spinner fa-spin loading-spinner"></i>
+            <p id="loading-text">Generating files...</p>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
+    <script src="js/xmlProcessor.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
